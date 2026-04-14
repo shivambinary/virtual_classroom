@@ -1,18 +1,19 @@
 import express from "express";
 import {
   createClass,
-  getClasses,
-  joinClass
+  getMyClasses,
+  getAllClasses, getClassDetails
 } from "../controllers/class.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createClass);
+router.use(authMiddleware);
 
-router.get("/", authMiddleware, getClasses);
-
-router.post("/:id/join", authMiddleware, joinClass);
+router.post("/", createClass);
+router.get("/my", getMyClasses);
+router.get("/", getAllClasses);
+router.get("/:id/details", getClassDetails);
 
 export default router;

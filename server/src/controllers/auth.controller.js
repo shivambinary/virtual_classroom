@@ -1,38 +1,38 @@
-import { registerUser, loginUser, getProfile } from "../services/auth.service.js";
+import * as authService from "../services/user.service.js";
+import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 
 export const register = asyncHandler(async (req, res) => {
-  const user = await registerUser(req.body);
+  const user = await authService.registerUser(req.body);
 
-  res.status(201).json({
-    status: "success",
-    data: user
-  });
+  return res
+    .status(201)
+    .json(new ApiResponse(201, user, "User registered"));
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const result = await loginUser(req.body);
+  const { user, token } = await authService.loginUser(req.body);
 
-  res.status(200).json({
-    status: "success",
-    data: result
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { user, token }, "Login Successful"));
 });
 
-export const profile = asyncHandler(async (req, res) => {
-  const user = await getProfile(req.user.id);
+export const getProfile = asyncHandler(async (req, res) => {
+  const user = await authService.getProfile({ userId: req.user.id });
 
-  res.status(200).json({
-    status: "success",
-    data: user
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Profile fetched"));
 });
 
-export const update = asyncHandler(async (req, res) => {
-  const user = await updateProfile(req.user.id, req.body);
-
-  res.status(200).json({
-    status: "success",
-    data: user
+export const updateProfile = asyncHandler(async (req, res) => {
+  const user = await authService.editProfile({
+    userId: req.user.id,
+    data: req.body
   });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Profile Updated"));
 });

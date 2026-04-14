@@ -1,10 +1,14 @@
-const errorHandler = (err, req, res, next) => {
-    const statusCode = err.statusCode || 500;
+import ApiResponse from "../utils/ApiResponse.js";
 
-    res.status(statusCode).json({
-        success: false,
-        message: err.message || "Internal Server Error",
-    });
+export const errorHandler = (err, req, res, next) => {
+    console.error("🔥 ERROR:", err);
+
+    res.status(err.statusCode || 500).json(
+        new ApiResponse(
+            err.statusCode || 500,
+            null,
+            err.message || "Internal Server Error",
+            false
+        )
+    );
 };
-
-export default errorHandler;

@@ -1,42 +1,59 @@
 import Class from "../models/class.model.js";
 import ApiError from "../utils/ApiError.js";
+import Enrollment from "../models/enrollment.model.js";
 
-export const createClass = async ({ name, teacherId }) => {
+export const createClass = async (data, user) => {
+  console.log("USER:", user);
+
+  if (user.role !== "teacher") {
+    throw new ApiError(403, "Only teachers can create classes");
+  }
 
   const newClass = await Class.create({
-    name,
-    teacher: teacherId
+    name: data.name,
+    description: data.description,
+    teacher: user.id
   });
 
   return newClass;
 };
 
 
-export const getAllClasses = async () => {
+export const getTeacherClasses = async (user) => {
 
-  const classes = await Class.find()
-    .populate("teacher", "name email")
-    .populate("students", "name email");
+  return Class.find({ teacher: user.userId })
+    .sort({ createdAt: -1 });
 
-  return classes;
 };
 
 
-export const joinClass = async (classId, studentId) => {
+export const getAllClasses = async () => {
 
-  const classroom = await Class.findById(classId);
+  return Class.find()
+    .populate("teacher", "name email")
+    .sort({ createdAt: -1 });
 
-  if (!classroom) {
+};
+
+
+export const getClassWithStudents = async (classId) => {
+
+  const classData = await Class.findById(classId)
+    .populate("teacher", "name email");
+
+  if (!classData) {
     throw new ApiError(404, "Class not found");
   }
 
-  if (classroom.students.includes(studentId)) {
-    throw new ApiError(400, "Already joined");
-  }
+  const enrollments = await Enrollment.find({
+    class: classId,
+    status: "approved"
+  }).populate("student", "name email");
 
-  classroom.students.push(studentId);
+  const students = enrollments.map(e => e.student);
 
-  await classroom.save();
-
-  return classroom;
+  return {
+    ...classData.toObject(),
+    students  
+  };
 };
