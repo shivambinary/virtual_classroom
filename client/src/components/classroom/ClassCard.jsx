@@ -28,7 +28,6 @@ const ClassCard = ({ cls }) => {
         {cls.description}
       </p>
 
-      {/* Student Action */}
       {user?.role === "student" && (
         <button
           onClick={handleEnroll}

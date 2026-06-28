@@ -24,7 +24,6 @@ const SessionCard = ({ session }) => {
   return (
     <div className="bg-white p-4 rounded-xl shadow border hover:shadow-md transition">
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-2">
         <p className="font-medium text-sm">
           {new Date(session.scheduledAt).toLocaleString()}
@@ -37,12 +36,10 @@ const SessionCard = ({ session }) => {
         )}
       </div>
 
-      {/* Status */}
       <p className="text-xs text-gray-500 capitalize">
         Status: {session.state}
       </p>
 
-      {/* Actions */}
       <div className="mt-4">
 
         {user?.role === "teacher" ? (

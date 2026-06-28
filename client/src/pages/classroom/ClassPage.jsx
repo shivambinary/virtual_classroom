@@ -19,7 +19,9 @@ const ClassPage = () => {
   const dispatch = useDispatch();
 
   const { sessions, loading } = useSelector((state) => state.session);
-  const { materials } = useSelector((state) => state.material);
+  const { materials, loading: materialLoading } = useSelector(
+    (state) => state.material
+  );
   const { user } = useSelector((state) => state.auth);
 
   const [showSessionModal, setShowSessionModal] = useState(false);
@@ -29,16 +31,14 @@ const ClassPage = () => {
 
   const [materialForm, setMaterialForm] = useState({
     title: "",
-    fileUrl: "",
+    file: null,
   });
 
-  // 🔄 Fetch data
   useEffect(() => {
     dispatch(fetchSessions(id));
     dispatch(fetchMaterials(id));
   }, [dispatch, id]);
 
-  // 📅 Schedule session
   const handleSchedule = (e) => {
     e.preventDefault();
 
@@ -53,25 +53,26 @@ const ClassPage = () => {
     setDate("");
   };
 
-  // 📤 Upload material
-  const handleUploadMaterial = (e) => {
+  const handleUploadMaterial = async (e) => {
     e.preventDefault();
 
-    dispatch(
+    const res = await dispatch(
       addMaterial({
         classId: id,
-        ...materialForm,
+        title: materialForm.title,
+        file: materialForm.file,
       })
     );
 
-    setShowMaterialModal(false);
-    setMaterialForm({ title: "", fileUrl: "" });
+    if (res.meta.requestStatus === "fulfilled") {
+      dispatch(fetchMaterials(id));
+      setShowMaterialModal(false);
+      setMaterialForm({ title: "", file: null });
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Class Room</h1>
 
@@ -85,7 +86,6 @@ const ClassPage = () => {
         )}
       </div>
 
-      {/* ================= SESSIONS ================= */}
       <div className="bg-white p-4 rounded shadow mb-6">
         <h2 className="text-lg font-semibold mb-3">Sessions</h2>
 
@@ -104,9 +104,7 @@ const ClassPage = () => {
         </div>
       </div>
 
-      {/* ================= MATERIALS ================= */}
       <div className="bg-white p-4 rounded shadow">
-
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-lg font-semibold">Materials</h2>
 
@@ -132,27 +130,24 @@ const ClassPage = () => {
               key={mat._id}
               className="border p-3 rounded flex justify-between items-center"
             >
-              <p>{mat.title}</p>
+              <p className="font-medium">{mat.title}</p>
 
               <a
-                href={mat.fileUrl}
+                href={mat.fileUrl || mat.file}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 text-sm"
               >
-                View
+                {mat.fileName || "Download"}
               </a>
             </div>
           ))}
         </div>
-
       </div>
 
-      {/* ================= SESSION MODAL ================= */}
       {showSessionModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded w-full max-w-md">
-
             <h2 className="text-lg font-semibold mb-3">
               Schedule Session
             </h2>
@@ -179,22 +174,19 @@ const ClassPage = () => {
                 </button>
               </div>
             </form>
-
           </div>
         </div>
       )}
 
-      {/* ================= MATERIAL MODAL ================= */}
+      {/* Material Modal */}
       {showMaterialModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded w-full max-w-md">
-
             <h2 className="text-lg font-semibold mb-3">
               Upload Material
             </h2>
 
             <form onSubmit={handleUploadMaterial} className="space-y-3">
-
               <input
                 type="text"
                 placeholder="Title"
@@ -209,38 +201,55 @@ const ClassPage = () => {
                 required
               />
 
-              <input
-                type="text"
-                placeholder="File URL"
-                value={materialForm.fileUrl}
-                onChange={(e) =>
-                  setMaterialForm({
-                    ...materialForm,
-                    fileUrl: e.target.value,
-                  })
-                }
-                className="w-full border px-3 py-2 rounded"
-                required
-              />
+              {/* File */}
+              <div>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setMaterialForm({
+                      ...materialForm,
+                      file: e.target.files[0],
+                    })
+                  }
+                  className="w-full border px-3 py-2 rounded"
+                  required
+                />
+
+                {materialForm.file && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Selected: {materialForm.file.name}
+                  </p>
+                )}
+              </div>
 
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
+                  disabled={materialLoading}
                   onClick={() => setShowMaterialModal(false)}
                 >
                   Cancel
                 </button>
 
-                <button className="bg-purple-600 text-white px-4 py-2 rounded">
-                  Upload
+                <button
+                  type="submit"
+                  disabled={materialLoading}
+                  className={`px-4 py-2 rounded text-white flex items-center gap-2 ${
+                    materialLoading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-purple-600 hover:bg-purple-700"
+                  }`}
+                >
+                  {materialLoading && (
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  )}
+                  {materialLoading ? "Uploading..." : "Upload"}
                 </button>
               </div>
-
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 };

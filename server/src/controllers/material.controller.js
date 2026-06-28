@@ -3,31 +3,28 @@ import asyncHandler from "../middlewares/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 
 export const uploadMaterial = asyncHandler(async (req, res) => {
-
   if (!req.file) {
     throw new ApiError(400, "File is required");
   }
 
-  const fileUrl = req.file.path; // ✅ Cloudinary URL
+  const fileUrl = req.file.secure_url || req.file.path;
 
   const result = await materialService.uploadMaterial(
     {
       ...req.body,
-      fileUrl
+      fileUrl,
+      fileName: req.file.originalname,
     },
     req.user
   );
 
   res.status(201).json({
     status: "success",
-    data: result
+    data: result,
   });
-
 });
 
-
 export const getMaterials = asyncHandler(async (req, res) => {
-
   const result = await materialService.getClassMaterials(
     req.params.classId,
     req.user
@@ -35,7 +32,6 @@ export const getMaterials = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    data: result
+    data: result,
   });
-
 });

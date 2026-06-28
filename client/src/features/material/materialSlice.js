@@ -20,9 +20,16 @@ export const addMaterial = createAsyncThunk(
   "material/add",
   async (data, thunkAPI) => {
     try {
-      const res = await uploadMaterial(data);
+      const formData = new FormData();
+
+      formData.append("classId", data.classId);
+      formData.append("title", data.title);
+      formData.append("file", data.file);
+
+      const res = await uploadMaterial(formData);
+
       return res.data.data;
-    } catch {
+    } catch (err) {
       return thunkAPI.rejectWithValue("Upload failed");
     }
   }
@@ -51,8 +58,16 @@ const materialSlice = createSlice({
         state.error = action.payload;
       })
 
+      .addCase(addMaterial.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(addMaterial.fulfilled, (state, action) => {
-        state.materials.unshift(action.payload);
+        state.loading = false;
+        state.materials = [action.payload, ...state.materials];
+      })
+      .addCase(addMaterial.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

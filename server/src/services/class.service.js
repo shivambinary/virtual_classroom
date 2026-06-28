@@ -21,17 +21,14 @@ export const createClass = async (data, user) => {
 
 export const getTeacherClasses = async (user) => {
 
-  return Class.find({ teacher: user.userId })
-    .sort({ createdAt: -1 });
+  return Class.find({ teacher: user.id }).sort({ createdAt: -1 });
 
 };
 
 
 export const getAllClasses = async () => {
 
-  return Class.find()
-    .populate("teacher", "name email")
-    .sort({ createdAt: -1 });
+  return Class.find().populate("teacher", "name email").sort({ createdAt: -1 });
 
 };
 

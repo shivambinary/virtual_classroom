@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { loginUser, registerUser } from "./authAPI";
 
-// 🔐 LOGIN
 export const login = createAsyncThunk(
   "auth/login",
   async (credentials, thunkAPI) => {
@@ -16,7 +15,6 @@ export const login = createAsyncThunk(
   }
 );
 
-// 📝 REGISTER
 export const register = createAsyncThunk(
   "auth/register",
   async (userData, thunkAPI) => {
@@ -31,9 +29,12 @@ export const register = createAsyncThunk(
   }
 );
 
+const userFromStorage = JSON.parse(localStorage.getItem("user"));
+const tokenFromStorage = localStorage.getItem("token");
+
 const initialState = {
-  user: null,
-  token: localStorage.getItem("token") || null,
+  user: userFromStorage || null,
+  token: tokenFromStorage || null,
   loading: false,
   error: null,
 };
@@ -49,6 +50,7 @@ const authSlice = createSlice({
       state.error = null;
 
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
 
     clearError: (state) => {
@@ -58,7 +60,6 @@ const authSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      // 🔐 LOGIN
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -70,13 +71,16 @@ const authSlice = createSlice({
         state.token = action.payload.token;
 
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem(
+          "user",
+          JSON.stringify(action.payload.user)
+        );
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Login failed";
       })
 
-      // 📝 REGISTER
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;

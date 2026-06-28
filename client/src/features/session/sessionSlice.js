@@ -17,7 +17,6 @@ export const fetchSessions = createAsyncThunk(
   }
 );
 
-// 📅 Schedule session
 export const scheduleSession = createAsyncThunk(
   "session/schedule",
   async (data, thunkAPI) => {
@@ -30,7 +29,6 @@ export const scheduleSession = createAsyncThunk(
   }
 );
 
-// ▶ Start session
 export const startLiveSession = createAsyncThunk(
   "session/start",
   async (sessionId, thunkAPI) => {
@@ -54,7 +52,6 @@ const sessionSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      // FETCH
       .addCase(fetchSessions.pending, (state) => {
         state.loading = true;
       })
@@ -67,7 +64,6 @@ const sessionSlice = createSlice({
         state.error = action.payload;
       })
 
-      // CREATE
       .addCase(scheduleSession.fulfilled, (state, action) => {
         state.sessions.unshift(action.payload);
       });

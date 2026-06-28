@@ -16,12 +16,10 @@ const DashboardPage = () => {
     description: "",
   });
 
-  // 🔄 Fetch classes
   useEffect(() => {
     dispatch(fetchClasses());
   }, [dispatch]);
 
-  // ➕ Create class
   const handleCreate = (e) => {
     e.preventDefault();
 
@@ -62,14 +60,12 @@ const DashboardPage = () => {
         </p>
       )}
 
-      {/* Class Grid */}
       <div className="grid md:grid-cols-3 gap-4">
         {classes.map((cls) => (
           <ClassCard key={cls._id} cls={cls} />
         ))}
       </div>
 
-      {/* Create Class Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
